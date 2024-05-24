@@ -17,7 +17,7 @@ socket.on('connect', () => {
 socket.on('triviaQuestion', ({question, options, correctAnswer}) => {
     CORRECT_ANSWER = correctAnswer;
     console.log('Trivia Question:', question);
-    console.log('Options:');
+    console.log('Options :');
     options.forEach((option, index) => {
         console.log(`${String.fromCharCode(65 + index)}. ${option}`);
     });
