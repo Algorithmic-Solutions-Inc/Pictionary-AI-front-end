@@ -1,4 +1,4 @@
-// client.js
+
 'use strict';
 require('dotenv').config({path: '../.env'})
 const io = require('socket.io-client');
