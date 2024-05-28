@@ -45,11 +45,10 @@ socket.on('triviaQuestion', ({ question, options, correctAnswer }) => {
 
     console.log('Trivia Question:', question);
     options.forEach((option, index) => {
-        console.log(`${String.fromCharCode(65 + index)}. ${option}`);
+        console.log(`assign letters ${String.fromCharCode(65 + index)}. ${option}`);
     });
-let shuffled = shuffle(options);
-    console.log("SHUFFLED:", options);
-    shuffled.forEach((option, index) => {
+    shuffle(options);
+    options.forEach((option, index) => {
         optionMap[String.fromCharCode(65 + index)] = option;
     });
 
