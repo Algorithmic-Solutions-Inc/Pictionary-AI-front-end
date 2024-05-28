@@ -11,11 +11,12 @@ let CORRECT_ANSWER = null;
 
 socket.on('connect', () => {
     console.log('Connected to server');
-    socket.emit('fetchTriviaQuestion'); // Request a trivia question when connected
+    socket.emit('joinRoom', 'mainRoom');
 });
 
 socket.on('triviaQuestion', ({question, options, correctAnswer}) => {
     CORRECT_ANSWER = correctAnswer;
+    console.log('-----------------------------------------------');
     console.log('Trivia Question:', question);
     console.log('Options :');
     options.forEach((option, index) => {
