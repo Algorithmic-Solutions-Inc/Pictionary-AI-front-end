@@ -1,6 +1,6 @@
 
 'use strict';
-require('dotenv').config({path: '../.env'})
+require('dotenv').config()
 const io = require('socket.io-client');
 const clientURL = process.env.URL;
 
@@ -56,8 +56,8 @@ socket.on('guessAcknowledgment', (acknowledgment) => {
         if (isCorrect) {
             console.log('Your guess is correct!\n');
         } else {
-            console.log('Incorrect guess. Try again.\n');
-            askForGuess(CORRECT_ANSWER, optionMap); // Prompt for another guess if incorrect
+            console.log('Incorrect guess. Better luck next time!');
+            // askForGuess(CORRECT_ANSWER, optionMap); // option:another guess if incorrect
         }
     }
 );
