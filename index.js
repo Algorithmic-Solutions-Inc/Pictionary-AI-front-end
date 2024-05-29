@@ -10,6 +10,8 @@ let CORRECT_ANSWER = null;
 let QUESTION = null;
 let PLAYERSCORES = null;
 
+let hasAnswered = false;
+
 const readline = require('readline');
 const { shuffle } = require("./utility");
 let rl = readline.createInterface({
@@ -54,13 +56,14 @@ process.stdin.once('data', (data) => {
 
     // Start listening for trivia questions after joining the room
     socket.on('triviaQuestion', ({ question, options, correctAnswer, playerScores }) => {
+        hasAnswered = false;
         PLAYERSCORES = playerScores;
         QUESTION = question;
         CORRECT_ANSWER = correctAnswer;
         clearConsole();
         askForGuess(CORRECT_ANSWER, optionMap); // Ask for guess after displaying the question
         console.log('\n-----------------------------------------------');
-        console.log(playerScores || '');
+        displayScores(playerScores);
         console.log('Trivia Question:', question || "Waiting for Question");
         console.log('Options :');
         shuffle(options);
@@ -68,7 +71,7 @@ process.stdin.once('data', (data) => {
             console.log(`${String.fromCharCode(65 + index)}. ${option}`);
             optionMap[String.fromCharCode(65 + index)] = option;
         });
-
+        console.log('Enter your guess (A, B, C, D, etc.): ');
     });
 
     // Handle unexpected errors
@@ -84,15 +87,24 @@ process.stdin.once('data', (data) => {
     socket.on('timer', (timeLeft) => {
         clearConsole();
         console.log('\n-----------------------------------------------');
-        console.log(PLAYERSCORES || '');
+        displayScores(PLAYERSCORES);
         console.log(`Time remaining: ${timeLeft} seconds`);
         console.log('Trivia Question:', QUESTION || "Waiting for Question");
         // Print options
         for (const [key, value] of Object.entries(optionMap)) {
             console.log(`${key}. ${value}`);
         }
+                console.log('Enter your guess (A, B, C, D, etc.): ');
         console.log("HINT", CORRECT_ANSWER);
         // console.log('Enter your guess (A, B, C, D, etc.): ');
+        if (hasAnswered) {
+            if (isCorrect) {
+                console.log('Your guess is correct!\n');
+            } else {
+                console.log('Incorrect guess. Better luck next time!');
+            }
+        }
+
     });
 
     function askForGuess(correctAnswer, optionMap) {
@@ -105,10 +117,11 @@ process.stdin.once('data', (data) => {
             output: process.stdout
         });
 
-        rl.question('Enter your guess (A, B, C, D, etc.): ', handleInput);
+        rl.question('', handleInput);
     }
 
     socket.on('guessAcknowledgment', (acknowledgment) => {
+        hasAnswered = true;
         if (isCorrect) {
             console.log('Your guess is correct!\n');
         } else {
@@ -119,4 +132,17 @@ process.stdin.once('data', (data) => {
     process.on('uncaughtException', (error) => {
         console.error('An unexpected error occurred:', error);
     });
+
+    function displayScores(playerScores) {
+        if (playerScores) {
+            console.log('\nPlayer Scores:');
+            console.log('-----------------------------------------------');
+            console.log('Player\t\tScore');
+            console.log('-----------------------------------------------');
+            Object.entries(playerScores).forEach(([player, score]) => {
+                console.log(`${player}\t\t${score}`);
+            });
+            console.log('-----------------------------------------------\n');
+        }
+    }
 });
