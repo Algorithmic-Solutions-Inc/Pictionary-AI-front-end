@@ -95,7 +95,6 @@ process.stdin.once('data', (data) => {
             console.log(`${key}. ${value}`);
         }
                 console.log('Enter your guess (A, B, C, D, etc.): ');
-        console.log("HINT", CORRECT_ANSWER);
         // console.log('Enter your guess (A, B, C, D, etc.): ');
         if (hasAnswered) {
             if (isCorrect) {
