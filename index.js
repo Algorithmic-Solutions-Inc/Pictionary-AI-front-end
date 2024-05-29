@@ -72,7 +72,8 @@ process.stdin.once('data', (data) => {
 
         QUESTION = question;
         CORRECT_ANSWER = correctAnswer;
-        console.log('-----------------------------------------------');
+        clearConsole();
+        console.log('\n-----------------------------------------------');
         console.log(playerScores);
         console.log('Trivia Question:', question);
         console.log('Options :');
@@ -96,7 +97,8 @@ process.stdin.once('data', (data) => {
     socket.on('timer', (timeLeft) => {
         console.log('timer log');
         clearConsole();
-        console.log('-----------------------------------------------');
+        console.log('\n-----------------------------------------------');
+
         console.log(PLAYERSCORES);
         console.log(`Time remaining: ${timeLeft} seconds`);
         console.log('Trivia Question:', QUESTION);
