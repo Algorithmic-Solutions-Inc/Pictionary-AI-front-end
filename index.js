@@ -13,22 +13,51 @@ let PLAYERSCORES = null;
 
 
 const readline = require('readline');
-const {shuffle} = require("./utility");
-const rl = readline.createInterface({
+const { shuffle } = require("./utility");
+let rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
 let userName = '';
 
-    process.stdout.write('Enter your name: ');
+process.stdout.write('Enter your name: ');
 
 process.stdin.once('data', (data) => {
 
     userName = data.toString().trim(); // Trim whitespace from the input
 
     console.log(`Hello, ${userName}!`);
-    
+
+    // Define the event listener function
+    function handleInput(data) {
+        // Pause input stream to stop waiting for further input
+
+        const guess = data.toString().trim().toUpperCase(); // Convert the guess to uppercase
+
+        if (!optionMap[guess]) {
+            console.error('Invalid input. Please enter a valid option.');
+            // Prompt for guess again
+            askForGuess(correctAnswer, optionMap);
+            return;
+        }
+        isCorrect = optionMap[guess] === CORRECT_ANSWER; // Compare the guess with the correct answer
+        socket.emit('sendGuess', isCorrect); // Send the guess and whether it's correct to the server
+
+        const userUpdate = {
+            "userName": userName,
+            "isCorrect": isCorrect
+        }
+        socket.emit('checkAnswer', userUpdate);
+
+        // Remove the event listener to prevent multiple triggers
+
+        // Prompt for the next guess
+        // askForGuess(CORRECT_ANSWER, optionMap);
+    }
+
+
+
     // Emit 'joinRoom' event after capturing the username
     socket.emit('joinRoom', {
         roomId: 'mainRoom',
@@ -37,6 +66,8 @@ process.stdin.once('data', (data) => {
 
     // Start listening for trivia questions after joining the room
     socket.on('triviaQuestion', ({ question, options, correctAnswer, playerScores }) => {
+        // process.stdin.destroy();
+
         PLAYERSCORES = playerScores;
 
         QUESTION = question;
@@ -50,73 +81,70 @@ process.stdin.once('data', (data) => {
             console.log(`${String.fromCharCode(65 + index)}. ${option}`);
             optionMap[String.fromCharCode(65 + index)] = option;
         });
-        askForGuess(correctAnswer, optionMap); // Ask for guess after displaying the question
+        askForGuess(CORRECT_ANSWER, optionMap); // Ask for guess after displaying the question
     });
 
     // Handle unexpected errors
     socket.on('error', (message) => console.error('Error:', message));
-});
-
-function clearConsole() {
-    // Clear the console
-    const blank = '\n'.repeat(process.stdout.rows);
-    console.log(blank);
-    rl.write(null, { ctrl: true, name: 'l' });
-}
-
-socket.on('timer', (timeLeft) => {
-    console.log('timer log');
-    clearConsole();
-    console.log('-----------------------------------------------');
-    console.log(PLAYERSCORES);
-    console.log(`Time remaining: ${timeLeft} seconds`);
-    console.log('Trivia Question:', QUESTION);
-    // Print options
-    for (const [key, value] of Object.entries(optionMap)) {
-        console.log(`${key}. ${value}`);
+    function clearConsole() {
+        // Clear the console
+        const blank = '\n'.repeat(process.stdout.rows);
+        console.log(blank);
+        rl.write(null, { ctrl: true, name: 'l' });
     }
-    askForGuess(CORRECT_ANSWER, optionMap);
-});
 
-
-function askForGuess(correctAnswer, optionMap) {
-    process.stdout.write('Enter your guess (A, B, C, D, etc.): ');
-    console.log("HINT", correctAnswer)
-    process.stdin.resume(); // Resume input stream
-    process.stdin.once('data', (data) => {
-        const guess = data.toString().trim().toUpperCase(); // Convert the guess to uppercase
-
-        if (!optionMap[guess]) {
-            console.error('Invalid input. Please enter a valid option.');
-            process.stdin.pause(); // Pause input stream
-            return;
+    socket.on('timer', (timeLeft) => {
+        console.log('timer log');
+        clearConsole();
+        console.log('-----------------------------------------------');
+        console.log(PLAYERSCORES);
+        console.log(`Time remaining: ${timeLeft} seconds`);
+        console.log('Trivia Question:', QUESTION);
+        // Print options
+        for (const [key, value] of Object.entries(optionMap)) {
+            console.log(`${key}. ${value}`);
         }
-
-
-        isCorrect = optionMap[guess] === correctAnswer; // Compare the guess with the correct answer
-        socket.emit('sendGuess', isCorrect); // Send the guess and whether it's correct to the server
-
-        process.stdin.pause(); // Pause input stream
+        console.log("HINT", CORRECT_ANSWER);
+        //askForGuess(CORRECT_ANSWER, optionMap);
     });
-}
 
-socket.on('guessAcknowledgment', (acknowledgment) => {
-    const userUpdate = {
-        "userName": userName,
-        "isCorrect":isCorrect
+
+
+    function askForGuess(correctAnswer, optionMap) {
+        rl.close();
+        console.log("HINT", correctAnswer);
+
+        // Create a new readline interface each time
+        rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+    
+        // Prompt for guess
+        rl.question('Enter your guess (A, B, C, D, etc.): ', handleInput);
+
     }
 
-    socket.emit('checkAnswer', userUpdate);
-    socket.off('checkAnswer', userUpdate);
-    if (isCorrect) {
-        console.log('Your guess is correct!\n');
-    } else {
-        console.log('Incorrect guess. Better luck next time!');
-        // askForGuess(CORRECT_ANSWER, optionMap); // option:another guess if incorrect
-    }
+
+
+
+
+
+
+    socket.on('guessAcknowledgment', (acknowledgment) => {
+
+        if (isCorrect) {
+            console.log('Your guess is correct!\n');
+        } else {
+            console.log('Incorrect guess. Better luck next time!');
+            // askForGuess(CORRECT_ANSWER, optionMap); // option:another guess if incorrect
+        }
+    });
+
+    // Handle unexpected errors
+    process.on('uncaughtException', (error) => {
+        console.error('An unexpected error occurred:', error);
+    });
+
 });
 
-// Handle unexpected errors
-process.on('uncaughtException', (error) => {
-    console.error('An unexpected error occurred:', error);
-});
