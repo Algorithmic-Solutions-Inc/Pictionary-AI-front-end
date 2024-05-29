@@ -94,7 +94,7 @@ function askForGuess(correctAnswer, optionMap) {
 
 
         isCorrect = optionMap[guess] === correctAnswer; // Compare the guess with the correct answer
-        socket.emit('sendGuess', guess); // Send the guess and whether it's correct to the server
+        socket.emit('sendGuess', isCorrect); // Send the guess and whether it's correct to the server
 
         process.stdin.pause(); // Pause input stream
     });
@@ -104,8 +104,8 @@ socket.on('guessAcknowledgment', (acknowledgment) => {
     const userUpdate = {
         "userName": userName,
         "isCorrect":isCorrect
-
     }
+
     socket.emit('checkAnswer', userUpdate);
     socket.off('checkAnswer', userUpdate);
     if (isCorrect) {
