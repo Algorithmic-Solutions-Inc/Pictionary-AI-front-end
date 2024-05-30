@@ -61,7 +61,7 @@ process.stdin.once('data', (data) => {
 
         askForGuess(); // Ask for guess after displaying the question
         console.log('\n-----------------------------------------------');
-        console.log(playerScores || '');
+        displayScores(playerScores);
         console.log('Trivia Question:', question || "Waiting for Question");
         console.log('Options :');
         shuffle(options);
@@ -85,7 +85,7 @@ process.stdin.once('data', (data) => {
     socket.on('timer', (timeLeft) => {
         clearConsole();
         console.log('\n-----------------------------------------------');
-        console.log(PLAYERSCORES || '');
+        displayScores(PLAYERSCORES);
         console.log(`Time remaining: ${timeLeft} seconds`);
         console.log('Trivia Question:', QUESTION || "Waiting for Question");
         // Print options
@@ -120,4 +120,17 @@ process.stdin.once('data', (data) => {
     process.on('uncaughtException', (error) => {
         console.error('An unexpected error occurred:', error);
     });
+
+    function displayScores(playerScores) {
+        if (playerScores) {
+            console.log('\nPlayer Scores:');
+            console.log('-----------------------------------------------');
+            console.log('Player\t\tScore');
+            console.log('-----------------------------------------------');
+            Object.entries(playerScores).forEach(([player, score]) => {
+                console.log(`${player}\t\t${score}`);
+            });
+            console.log('-----------------------------------------------\n');
+        }
+    }
 });
