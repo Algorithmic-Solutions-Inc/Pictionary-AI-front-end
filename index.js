@@ -114,11 +114,10 @@ process.stdin.once('data', (data) => {
     }
 
     socket.on('guessAcknowledgment', (USER_NAME, isCorrect) => {
-        if (isCorrect) {
+        if (isCorrect)
             console.log(USER_NAME.toUpperCase().bold+ " ANSWERED CORRECTLY!".green);
-        } else {
-            console.log('Incorrect guess. Better luck next time!');
-        }
+        else
+            console.log('Incorrect guess. Better luck next time!'.bold);
     });
 
     process.on('uncaughtException', (error) => {
