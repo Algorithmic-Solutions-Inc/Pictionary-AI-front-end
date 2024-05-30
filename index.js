@@ -18,7 +18,7 @@ let rl = readline.createInterface({
 });
 
 let userName = '';
-
+let guessToServer = ''
 process.stdout.write('Enter your name: ');
 
 process.stdin.once('data', (data) => {
@@ -28,16 +28,16 @@ process.stdin.once('data', (data) => {
 
     // Define the event listener function
     function handleInput(data) {
-        const guess = data.toString().trim().toUpperCase(); // Convert the guess to uppercase
-
+        const guess = data.toString().trim().toUpperCase();
+        console.log("!!!!!!!!!!!!!!!!!!!!!!!!guess entered",guess,optionMap[guess])
+        guessToServer = optionMap[guess];
         if (!optionMap[guess]) {
             console.error('Invalid input. Please enter a valid option.');
-            askForGuess(CORRECT_ANSWER, optionMap); // Ask for guess again
+            askForGuess(); // Ask for guess again
             return;
         }
 
-        isCorrect = optionMap[guess] === CORRECT_ANSWER; // Compare the guess with the correct answer
-        socket.emit('sendGuess', 'mainRoom', isCorrect, CORRECT_ANSWER); // Send the guess and whether it's correct to the server
+        socket.emit('sendGuess', guessToServer); // Send the guess and whether it's correct to the server
 
         const userUpdate = {
             userName: userName,
@@ -58,7 +58,8 @@ process.stdin.once('data', (data) => {
         QUESTION = question;
         CORRECT_ANSWER = correctAnswer;
         clearConsole();
-        askForGuess(CORRECT_ANSWER, optionMap); // Ask for guess after displaying the question
+
+        askForGuess(); // Ask for guess after displaying the question
         console.log('\n-----------------------------------------------');
         console.log(playerScores || '');
         console.log('Trivia Question:', question || "Waiting for Question");
@@ -72,7 +73,7 @@ process.stdin.once('data', (data) => {
     });
 
     // Handle unexpected errors
-    socket.on('error', (message) => console.error('Error:', message));
+    socket.on('error', (message) => console.error('Error:', message));console
 
     function clearConsole() {
         const blank = '\n'.repeat(process.stdout.rows);
@@ -95,7 +96,7 @@ process.stdin.once('data', (data) => {
         // console.log('Enter your guess (A, B, C, D, etc.): ');
     });
 
-    function askForGuess(correctAnswer, optionMap) {
+    function askForGuess() {
         if (rl) {
             rl.close(); // Close any previous readline interface
         }
@@ -108,9 +109,9 @@ process.stdin.once('data', (data) => {
         rl.question('Enter your guess (A, B, C, D, etc.): ', handleInput);
     }
 
-    socket.on('guessAcknowledgment', (acknowledgment) => {
+    socket.on('guessAcknowledgment', (isCorrect) => {
         if (isCorrect) {
-            console.log('Your guess is correct!\n');
+            console.log('Your guess is correct!\n',isCorrect);
         } else {
             console.log('Incorrect guess. Better luck next time!');
         }
