@@ -10,6 +10,8 @@ let CORRECT_ANSWER = null;
 let QUESTION = null;
 let PLAYERSCORES = null;
 
+const colors = require('colors');
+
 let hasAnswered = false;
 
 const he = require('he');
@@ -101,9 +103,9 @@ process.stdin.once('data', (data) => {
         // console.log('Enter your guess (A, B, C, D, etc.): ');
         if (hasAnswered) {
             if (isCorrect) {
-                console.log('Your guess is correct!\n');
+                console.log(colors.rainbow('Your guess is correct!\n'));
             } else {
-                console.log('Incorrect guess. Better luck next time!');
+                console.log('Incorrect guess. Better luck next time!'.red);
             }
         }
 
@@ -125,9 +127,9 @@ process.stdin.once('data', (data) => {
     socket.on('guessAcknowledgment', (acknowledgment) => {
         hasAnswered = true;
         if (isCorrect) {
-            console.log('Your guess is correct!\n');
+            console.log(colors.rainbow('Your guess is correct!\n'));
         } else {
-            console.log('Incorrect guess. Better luck next time!');
+            console.log('Incorrect guess. Better luck next time!'.red);
         }
     });
 
@@ -137,14 +139,14 @@ process.stdin.once('data', (data) => {
 
     function displayScores(playerScores) {
         if (playerScores) {
-            console.log('\nPlayer Scores:');
-            console.log('-----------------------------------------------');
-            console.log('Player\t\tScore');
-            console.log('-----------------------------------------------');
+            console.log('\nPlayer Scores:'.yellow);
+            console.log('-----------------------------------------------'.yellow);
+            console.log('Player\t\tScore'.yellow.bold);
+            console.log('-----------------------------------------------'.yellow);
             Object.entries(playerScores).forEach(([player, score]) => {
-                console.log(`${player}\t\t${score}`);
+                console.log(`${player.yellow}\t\t${score.toString().yellow}`);
             });
-            console.log('-----------------------------------------------\n');
+            console.log('-----------------------------------------------\n'.yellow);
         }
     }
 });
