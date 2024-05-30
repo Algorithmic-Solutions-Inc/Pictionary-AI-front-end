@@ -111,9 +111,9 @@ process.stdin.once('data', (data) => {
         rl.question('Enter your guess (A, B, C, D, etc.): ', handleInput);
     }
 
-    socket.on('guessAcknowledgment', (isCorrect) => {
+    socket.on('guessAcknowledgment', (USER_NAME, isCorrect) => {
         if (isCorrect) {
-            console.log('Your guess is correct!\n',isCorrect);
+            console.log(`${USER_NAME.toUpperCase()}, ANSWERED CORRECTLY!`);
         } else {
             console.log('Incorrect guess. Better luck next time!');
         }
