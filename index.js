@@ -66,7 +66,7 @@ process.stdin.once('data', (data) => {
         askForGuess(CORRECT_ANSWER, optionMap); // Ask for guess after displaying the question
         console.log('\n-----------------------------------------------');
         displayScores(playerScores);
-        console.log('Trivia Question:', question || "Waiting for Question");
+        console.log('Trivia Question:', QUESTION || "Waiting for Question");
         console.log('Options :');
         shuffle(options);
         options.forEach((option, index) => {
