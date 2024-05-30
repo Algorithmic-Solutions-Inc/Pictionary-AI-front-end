@@ -31,7 +31,7 @@ process.stdin.once('data', (data) => {
     // Define the event listener function
     function handleInput(data) {
         const guess = data.toString().trim().toUpperCase();
-        console.log("!!!!!!!!!!!!!!!!!!!!!!!!guess entered",guess,optionMap[guess])
+        console.log("Guess entered",guess,optionMap[guess])
         guessToServer = optionMap[guess];
         if (!optionMap[guess]) {
             console.error('Invalid input. Please enter a valid option.');
