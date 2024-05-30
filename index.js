@@ -3,7 +3,7 @@ require('dotenv').config();
 const io = require('socket.io-client');
 const clientURL = process.env.URL;
 
-const optionMap = {}; // Map options to letters
+let optionMap = {}; // Map options to letters
 const socket = io(clientURL);
 let isCorrect = null;
 let CORRECT_ANSWER = null;
@@ -59,6 +59,7 @@ process.stdin.once('data', (data) => {
     // Start listening for trivia questions after joining the room
     socket.on('triviaQuestion', ({ question, options, correctAnswer, playerScores }) => {
         hasAnswered = false;
+        optionMap = {};
         PLAYERSCORES = playerScores;
         QUESTION = he.decode(question);
         CORRECT_ANSWER = he.decode(correctAnswer);
