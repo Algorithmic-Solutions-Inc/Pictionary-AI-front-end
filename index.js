@@ -2,6 +2,8 @@
 require('dotenv').config();
 const io = require('socket.io-client');
 const clientURL = process.env.URL;
+let colors = require('colors');
+
 
 const optionMap = {}; // Map options to letters
 const socket = io(clientURL);
@@ -34,7 +36,7 @@ process.stdin.once('data', (data) => {
         console.log("Guess entered",guess,optionMap[guess])
         guessToServer = optionMap[guess];
         if (!optionMap[guess]) {
-            console.error('Invalid input. Please enter a valid option.');
+            console.error('Invalid input. Please enter a valid option.'.red);
             askForGuess(); // Ask for guess again
             return;
         }
@@ -113,7 +115,7 @@ process.stdin.once('data', (data) => {
 
     socket.on('guessAcknowledgment', (USER_NAME, isCorrect) => {
         if (isCorrect) {
-            console.log(`${USER_NAME.toUpperCase()}, ANSWERED CORRECTLY!`);
+            console.log(USER_NAME.toUpperCase().bold+ " ANSWERED CORRECTLY!".green);
         } else {
             console.log('Incorrect guess. Better luck next time!');
         }
