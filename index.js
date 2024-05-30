@@ -10,6 +10,8 @@ let CORRECT_ANSWER = null;
 let QUESTION = null;
 let PLAYERSCORES = null;
 
+const he = require('he');
+
 const readline = require('readline');
 const { shuffle } = require("./utility");
 let rl = readline.createInterface({
@@ -55,8 +57,8 @@ process.stdin.once('data', (data) => {
     // Start listening for trivia questions after joining the room
     socket.on('triviaQuestion', ({ question, options, correctAnswer, playerScores }) => {
         PLAYERSCORES = playerScores;
-        QUESTION = question;
-        CORRECT_ANSWER = correctAnswer;
+        QUESTION = he.decode(question);
+        CORRECT_ANSWER = he.decode(correctAnswer);
         clearConsole();
 
         askForGuess(); // Ask for guess after displaying the question
@@ -66,8 +68,8 @@ process.stdin.once('data', (data) => {
         console.log('Options :');
         shuffle(options);
         options.forEach((option, index) => {
-            console.log(`${String.fromCharCode(65 + index)}. ${option}`);
-            optionMap[String.fromCharCode(65 + index)] = option;
+            console.log(`${String.fromCharCode(65 + index)}. ${he.decode(option)}`);
+            optionMap[String.fromCharCode(65 + index)] = he.decode(option);
         });
 
     });
