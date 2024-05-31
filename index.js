@@ -82,12 +82,6 @@ process.stdin.once('data', (data) => {
     // Handle unexpected errors
     socket.on('error', (message) => console.error('Error:', message));
 
-    function clearConsole() {
-        const blank = '\n'.repeat(process.stdout.rows);
-        console.log(blank);
-        console.log('\n');
-        rl.write(null, { ctrl: true, name: 'l' });
-    }
 
     socket.on('timer', (timeLeft) => {
         clearConsole();
@@ -137,19 +131,28 @@ process.stdin.once('data', (data) => {
         console.error('An unexpected error occurred:', error);
     });
 
-    function displayScores(playerScores) {
-        if (playerScores) {
-            console.log('\nPlayer Scores:'.yellow);
-            console.log('-----------------------------------------------'.yellow);
-            console.log('Player\t\tScore'.yellow.bold);
-            console.log('-----------------------------------------------'.yellow);
-            Object.entries(playerScores).forEach(([player, score]) => {
-                console.log(`${player.yellow}\t\t${score.toString().yellow}`);
-            });
-            console.log('-----------------------------------------------\n'.yellow);
-        }
-    }
-
 });
 
+function displayScores(playerScores) {
+    if (playerScores) {
+        console.log('\nPlayer Scores:'.yellow);
+        console.log('-----------------------------------------------'.yellow);
+        console.log('Player\t\tScore'.yellow.bold);
+        console.log('-----------------------------------------------'.yellow);
+        Object.entries(playerScores).forEach(([player, score]) => {
+            console.log(`${player.yellow}\t\t${score.toString().yellow}`);
+        });
+        console.log('-----------------------------------------------\n'.yellow);
+    }
+}
+
+
+function clearConsole() {
+    const blank = '\n'.repeat(process.stdout.rows);
+    console.log(blank);
+    console.log('\n');
+    rl.write(null, { ctrl: true, name: 'l' });
+}
+
+module.exports = {clearConsole, displayScores};
 
