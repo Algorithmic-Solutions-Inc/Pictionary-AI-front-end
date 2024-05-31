@@ -1,21 +1,19 @@
 'use strict';
 require('dotenv').config();
 const io = require('socket.io-client');
+
 const clientURL = process.env.URL;
-var colors = require('colors');
+const colors = require('colors');
+const he = require('he');
+const readline = require('readline')
 
-
-const optionMap = {}; // Map options to letters
 const socket = io(clientURL);
-let isCorrect = null;
+let optionMap = {}; // Map options to letters
 let CORRECT_ANSWER = null;
 let QUESTION = null;
 let PLAYERSCORES = null;
+const {shuffle} = require("./utility");
 
-const he = require('he');
-
-const readline = require('readline');
-const { shuffle } = require("./utility");
 let rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -28,26 +26,19 @@ process.stdout.write('Enter your name: ');
 process.stdin.once('data', (data) => {
     userName = data.toString().trim(); // Trim whitespace from the input
 
-    console.log(`Hello, ${userName}!`);
+    console.log(`Welcome, ${userName}!`);
 
     // Define the event listener function
     function handleInput(data) {
         const guess = data.toString().trim().toUpperCase();
-        console.log("Guess entered",guess,optionMap[guess])
+        console.log("Guess entered !", guess, optionMap[guess])
         guessToServer = optionMap[guess];
         if (!optionMap[guess]) {
             console.error('Invalid input. Please enter a valid option.');
             askForGuess(); // Ask for guess again
             return;
         }
-
         socket.emit('sendGuess', guessToServer); // Send the guess and whether it's correct to the server
-
-        const userUpdate = {
-            userName: userName,
-            isCorrect: isCorrect
-        };
-        socket.emit('checkAnswer', userUpdate);
     }
 
     // Emit 'joinRoom' event after capturing the username
@@ -57,7 +48,7 @@ process.stdin.once('data', (data) => {
     });
 
     // Start listening for trivia questions after joining the room
-    socket.on('triviaQuestion', ({ question, options, correctAnswer, playerScores }) => {
+    socket.on('triviaQuestion', ({question, options, correctAnswer, playerScores}) => {
         PLAYERSCORES = playerScores;
         QUESTION = he.decode(question);
         CORRECT_ANSWER = he.decode(correctAnswer);
@@ -73,23 +64,23 @@ process.stdin.once('data', (data) => {
             console.log(`${String.fromCharCode(65 + index)}. ${he.decode(option)}`);
             optionMap[String.fromCharCode(65 + index)] = he.decode(option);
         });
-
     });
 
     // Handle unexpected errors
-    socket.on('error', (message) => console.error('Error:', message));console
+    socket.on('error', (message) => console.error('Error:', message));
 
     function clearConsole() {
         const blank = '\n'.repeat(process.stdout.rows);
         console.log(blank);
         console.log('\n');
-        rl.write(null, { ctrl: true, name: 'l' });
+        rl.write(null, {ctrl: true, name: 'l'});
     }
 
     socket.on('timer', (timeLeft) => {
         clearConsole();
         console.log('\n-----------------------------------------------');
         displayScores(PLAYERSCORES);
+        // process.stdout.clearLine(0);
         console.log(`Time remaining: ${timeLeft} seconds`);
         console.log('Trivia Question:', QUESTION || "Waiting for Question");
         // Print options
@@ -97,14 +88,12 @@ process.stdin.once('data', (data) => {
             console.log(`${key}. ${value}`);
         }
         console.log("HINT", CORRECT_ANSWER);
-        // console.log('Enter your guess (A, B, C, D, etc.): ');
     });
 
     function askForGuess() {
-        if (rl) {
-            rl.close(); // Close any previous readline interface
-        }
-
+        // if (rl) {
+        //     rl.close(); // Close any previous readline interface
+        // }
         rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
@@ -114,10 +103,12 @@ process.stdin.once('data', (data) => {
     }
 
     socket.on('guessAcknowledgment', (USER_NAME, isCorrect) => {
+        console.log("GUESS ACK", USER_NAME)
+        console.log(isCorrect, "----------received")
         if (isCorrect) {
             console.log(`${USER_NAME.toUpperCase()}, ANSWERED CORRECTLY!`.bold);
-        } else {
-            console.log('Incorrect guess. Better luck next time!');
+        } else{
+            console.log('Incorrect guess. Better luck next time!'.bold.red);
         }
     });
 
