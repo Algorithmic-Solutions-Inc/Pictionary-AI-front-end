@@ -3,12 +3,18 @@ require('dotenv').config();
 const io = require('socket.io-client');
 const clientURL = process.env.URL;
 
-const optionMap = {}; // Map options to letters
+let optionMap = {}; // Map options to letters
 const socket = io(clientURL);
 let isCorrect = null;
 let CORRECT_ANSWER = null;
 let QUESTION = null;
 let PLAYERSCORES = null;
+
+const colors = require('colors');
+
+let hasAnswered = false;
+
+const he = require('he');
 
 const readline = require('readline');
 const { shuffle } = require("./utility");
@@ -54,45 +60,49 @@ process.stdin.once('data', (data) => {
 
     // Start listening for trivia questions after joining the room
     socket.on('triviaQuestion', ({ question, options, correctAnswer, playerScores }) => {
+        hasAnswered = false;
+        optionMap = {};
         PLAYERSCORES = playerScores;
-        QUESTION = question;
-        CORRECT_ANSWER = correctAnswer;
+        QUESTION = he.decode(question);
+        CORRECT_ANSWER = he.decode(correctAnswer);
         clearConsole();
         askForGuess(CORRECT_ANSWER, optionMap); // Ask for guess after displaying the question
         console.log('\n-----------------------------------------------');
-        console.log(playerScores || '');
-        console.log('Trivia Question:', question || "Waiting for Question");
+        displayScores(playerScores);
+        console.log('Trivia Question:', QUESTION || "Waiting for Question");
         console.log('Options :');
         shuffle(options);
         options.forEach((option, index) => {
-            console.log(`${String.fromCharCode(65 + index)}. ${option}`);
-            optionMap[String.fromCharCode(65 + index)] = option;
+            console.log(`${String.fromCharCode(65 + index)}. ${he.decode(option)}`);
+            optionMap[String.fromCharCode(65 + index)] = he.decode(option);
         });
-
+        console.log('Enter your guess (A, B, C, D, etc.): ');
     });
 
     // Handle unexpected errors
     socket.on('error', (message) => console.error('Error:', message));
 
-    function clearConsole() {
-        const blank = '\n'.repeat(process.stdout.rows);
-        console.log(blank);
-        console.log('\n');
-        rl.write(null, { ctrl: true, name: 'l' });
-    }
 
     socket.on('timer', (timeLeft) => {
         clearConsole();
         console.log('\n-----------------------------------------------');
-        console.log(PLAYERSCORES || '');
+        displayScores(PLAYERSCORES);
         console.log(`Time remaining: ${timeLeft} seconds`);
         console.log('Trivia Question:', QUESTION || "Waiting for Question");
         // Print options
         for (const [key, value] of Object.entries(optionMap)) {
             console.log(`${key}. ${value}`);
         }
-        console.log("HINT", CORRECT_ANSWER);
+                console.log('Enter your guess (A, B, C, D, etc.): ');
         // console.log('Enter your guess (A, B, C, D, etc.): ');
+        if (hasAnswered) {
+            if (isCorrect) {
+                console.log(colors.rainbow('Your guess is correct!\n'));
+            } else {
+                console.log('Incorrect guess. Better luck next time!'.red);
+            }
+        }
+
     });
 
     function askForGuess(correctAnswer, optionMap) {
@@ -105,18 +115,44 @@ process.stdin.once('data', (data) => {
             output: process.stdout
         });
 
-        rl.question('Enter your guess (A, B, C, D, etc.): ', handleInput);
+        rl.question('', handleInput);
     }
 
     socket.on('guessAcknowledgment', (acknowledgment) => {
+        hasAnswered = true;
         if (isCorrect) {
-            console.log('Your guess is correct!\n');
+            console.log(colors.rainbow('Your guess is correct!\n'));
         } else {
-            console.log('Incorrect guess. Better luck next time!');
+            console.log('Incorrect guess. Better luck next time!'.red);
         }
     });
 
     process.on('uncaughtException', (error) => {
         console.error('An unexpected error occurred:', error);
     });
+
 });
+
+function displayScores(playerScores) {
+    if (playerScores) {
+        console.log('\nPlayer Scores:'.yellow);
+        console.log('-----------------------------------------------'.yellow);
+        console.log('Player\t\tScore'.yellow.bold);
+        console.log('-----------------------------------------------'.yellow);
+        Object.entries(playerScores).forEach(([player, score]) => {
+            console.log(`${player.yellow}\t\t${score.toString().yellow}`);
+        });
+        console.log('-----------------------------------------------\n'.yellow);
+    }
+}
+
+
+function clearConsole() {
+    const blank = '\n'.repeat(process.stdout.rows);
+    console.log(blank);
+    console.log('\n');
+    rl.write(null, { ctrl: true, name: 'l' });
+}
+
+module.exports = {clearConsole, displayScores};
+
